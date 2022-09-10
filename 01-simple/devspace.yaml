@@ -1,0 +1,42 @@
+version: v2beta1
+name: simple
+
+vars:
+  IMAGE: simple
+  # Specify default namespace
+  DEVSPACE_FLAGS: "-n simple"
+
+# Configuration to build a DevImage
+images:
+  simple:
+    image: ${IMAGE}
+    dockerfile: ./Dockerfile
+    rebuildStrategy: ignoreContextChanges
+
+# Configuration to deploy the application
+deployments:
+  simple:
+    helm:
+      # Use the DevSpace component chart here
+      values:
+        containers:
+          - image: ${IMAGE}
+        service:
+          ports:
+            - port: 3000
+
+# Configuration to start development
+dev:
+  simple:
+    imageSelector: ${IMAGE}
+    # Start port forwarding
+    ports:
+      - port: 3000:3000
+    # Start file sync
+    sync:
+      - path: ./:/app
+        excludePaths:
+          - node_modules/
+    # Start terminal forwarding with script entrypoint
+    terminal:
+      command: ./devspace_start.sh

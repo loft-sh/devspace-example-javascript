@@ -5,7 +5,13 @@ COLOR_CYAN="\033[0;36m"
 COLOR_RESET="\033[0m"
 
 # Install the dependencies
-npm install
+if [ -f "yarn.lock" ] && [ ! -d "node_modules" ]; then
+   echo "Installing Yarn Dependencies"
+   yarn
+elif [ -f "package.json" ] && [ ! -d "node_modules" ]; then
+    echo "Installing NPM Dependencies"
+    npm install
+fi
 
 echo -e "${COLOR_CYAN}
    ____              ____

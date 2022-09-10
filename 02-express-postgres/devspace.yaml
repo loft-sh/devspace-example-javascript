@@ -5,6 +5,7 @@ name: express-postgres
 vars:
   NODE_IMAGE: express-postgres
   POSTGRES_IMAGE: postgres:14.1-alpine
+  # Specify default namespace
   DEVSPACE_FLAGS: "-n express-postgres"
 
 # The containers to build
@@ -57,6 +58,8 @@ dev:
       - port: '8080'
   postgres:
     imageSelector: ${POSTGRES_IMAGE}
+    # Command and args are required for DevSpace to know
+    # what to start after ./database_seed.sql was successfully synced
     command: ["docker-entrypoint.sh"]
     args: ["postgres"]
     ports:
