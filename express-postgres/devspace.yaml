@@ -1,0 +1,68 @@
+version: v2beta1
+name: express-postgres
+
+# Defined variables
+vars:
+  NODE_IMAGE: express-postgres
+  POSTGRES_IMAGE: postgres:14.1-alpine
+  DEVSPACE_FLAGS: "-n express-postgres"
+
+# The containers to build
+images:
+  dev-container:
+    image: ${NODE_IMAGE}
+    dockerfile: ./Dockerfile
+    rebuildStrategy: ignoreContextChanges
+
+# The deployments to deploy inside Kubernetes
+deployments:
+  nodejs:
+    helm:
+      # Use the DevSpace component chart here
+      values:
+        containers:
+          - image: ${NODE_IMAGE}
+        service:
+          ports:
+          - port: 8080
+  postgres:
+    helm:
+      # Use the DevSpace component chart here
+      values:
+        containers:
+          - image: ${POSTGRES_IMAGE}
+            env:
+              - name: POSTGRES_USER
+                value: root
+              - name: POSTGRES_PASSWORD
+                value: root
+              - name: POSTGRES_DB
+                value: root
+        service:
+          ports:
+          - port: 5432
+
+# Dev Configuration
+dev:
+  nodejs:
+    imageSelector: ${NODE_IMAGE}
+    terminal:
+      command: ./devspace_start.sh
+    workingDir: /usr/src/app
+    sync:
+      - path: ./:/usr/src/app/
+        excludePaths:
+          - node_modules/
+    ports:
+      - port: '8080'
+  postgres:
+    imageSelector: ${POSTGRES_IMAGE}
+    command: ["docker-entrypoint.sh"]
+    args: ["postgres"]
+    ports:
+      - port: '5432:5432'
+    # Sync the seed sql and then start the container
+    sync:
+      - path: ./database_seed.sql:/docker-entrypoint-initdb.d/database_seed.sql
+        startContainer: true
+        noWatch: true
